@@ -1,0 +1,4 @@
+Aspose.Slides==24.5.0
+pyasn1==0.6.0
+PySimpleGUI==5.0.5
+rsa==4.9
