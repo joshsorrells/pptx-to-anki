@@ -1,4 +1,15 @@
-Aspose.Slides==24.5.0
+cached-property==1.5.2
+chevron==0.14.0
+comtypes==1.4.4
+frozendict==2.4.4
+genanki==0.13.1
+lxml==5.2.2
+pillow==10.3.0
+plum-dispatch==1.7.4
 pyasn1==0.6.0
 PySimpleGUI==5.0.5
+python-pptx==0.6.23
+python-pptx-interface==0.0.12
+PyYAML==6.0.1
 rsa==4.9
+XlsxWriter==3.2.0
