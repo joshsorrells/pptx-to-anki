@@ -13,9 +13,10 @@ def pptx_to_images(pptx_filename):
     image_dir = "images"
     image_path = os.path.join(current_dir, image_dir)
     save_pptx_as_png(image_path, pptx, overwrite_folder=True)
+    return len([name for name in os.listdir(image_path) if os.path.isfile(os.path.join(image_path, name))])
 
 def clean_up_images():
-    print("Cleaning up images...")
+    print("Cleaning up images...")The
     files = glob.glob('images/*.png')
     for file in files:
         os.remove(file)
@@ -26,13 +27,22 @@ def display_gui(num_slides):
     output = []
     try:
         slide = 1
+        input = sg.InputText(key='input')
+        image = sg.Image(f'images/Slide{slide}.png', key='image')
+        back_button = sg.Button('Back')
+        next_button = sg.Button('Next')
+        same_button = sg.Button('Repeat Image')
+        counter = sg.Text(f"1/{num_slides}", key='counter')
+        layout = [ 
+            [sg.Text('Term: '), input, image],
+            [back_button, same_button, next_button, sg.Push(), counter]
+                ]
+        window = sg.Window('PPTX to Anki Console', layout, finalize=True)
+        window.bind('<F1>', 'Back')
+        window.bind('<F2>', 'Repeat Image')
+        window.bind('<F3>', 'Next')
         
         while True:
-            layout = [ 
-                [sg.Text('Term: '), sg.InputText(key='input'), sg.Image(f'images/Slide{slide}.png')],
-                [sg.Button('Back'), sg.Button('Next')]
-                 ]
-            window = sg.Window('PPTX to Anki Console', layout, keep_on_top=True)
             event, values = window.read()
             if event == sg.WIN_CLOSED:
                 break
@@ -40,14 +50,26 @@ def display_gui(num_slides):
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide - 1
+                window['image'].update(f'images/Slide{slide}.png')
+                window['input'].update('')
+                window['counter'].update(f"{slide}/{num_slides}")
+            elif event == 'Repeat Image':
+                if values['input'] != '':
+                    output.append((values['input'], f'images/Slide{slide}.png'))
+                window['input'].update('')
             elif event == 'Next' and slide < num_slides:
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide + 1
+                window['image'].update(f'images/Slide{slide}.png')
+                window['input'].update('')
+                window['counter'].update(f"{slide}/{num_slides}")
             elif event == 'input' and slide < num_slides:
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide + 1
+                window['image'].update(f'images/Slide{slide}.png')
+                window['input'].update('')
         window.close()
     except Exception as e:
         print(e)
