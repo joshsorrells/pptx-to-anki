@@ -1,31 +1,25 @@
 import PySimpleGUI as sg
-import aspose.slides as slides
-import aspose.pydrawing as drawing
 import sys
 import os
 import genanki
 from random import randrange
-
+import glob
+from pptx_tools.utils import save_pptx_as_png
 
 def pptx_to_images(pptx_filename):
-    print("Converting pptx to images...")
-    # Desired thumbnail dimensions
-    desired_width = 960
-    desired_height = 540
-    # Load the presentation
-    count = 0
-    with slides.Presentation(pptx_filename) as presentation:
-        # Loop through each slide in the presentation
-        for i, slide in enumerate(presentation.slides):
-            count = count + 1
-            scale_width = desired_width / presentation.slide_size.size.width
-            scale_height = desired_height / presentation.slide_size.size.height
-            scale = min(scale_width, scale_height)
-            thumbnail = slide.get_thumbnail(scale, scale)
-            thumbnail.save(f"images/presentation_slide_{i + 1}.png", drawing.imaging.ImageFormat.png)
-    return count
+    print("Creating image files from pptx...")
+    current_dir = os.getcwd()
+    pptx = os.path.join(current_dir, pptx_filename)
+    image_dir = "images"
+    image_path = os.path.join(current_dir, image_dir)
+    save_pptx_as_png(image_path, pptx, overwrite_folder=True)
+
 def clean_up_images():
-    os.system("rm -rf images/*.png")
+    print("Cleaning up images...")
+    files = glob.glob('images/*.png')
+    for file in files:
+        os.remove(file)
+
 
 def display_gui(num_slides):
     print("Displaying GUI...")
@@ -35,7 +29,7 @@ def display_gui(num_slides):
         
         while True:
             layout = [ 
-                [sg.Text('Term: '), sg.InputText(key='input'), sg.Image(f'images/presentation_slide_{slide}.png')],
+                [sg.Text('Term: '), sg.InputText(key='input'), sg.Image(f'images/Slide{slide}.png')],
                 [sg.Button('Back'), sg.Button('Next')]
                  ]
             window = sg.Window('PPTX to Anki Console', layout, keep_on_top=True)
@@ -44,15 +38,15 @@ def display_gui(num_slides):
                 break
             elif event == 'Back' and slide > 1:
                 if values['input'] != '':
-                    output.append((values['input'], f'images/presentation_slide_{slide}.png'))
+                    output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide - 1
             elif event == 'Next' and slide < num_slides:
                 if values['input'] != '':
-                    output.append((values['input'], f'images/presentation_slide_{slide}.png'))
+                    output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide + 1
             elif event == 'input' and slide < num_slides:
                 if values['input'] != '':
-                    output.append((values['input'], f'images/presentation_slide_{slide}.png'))
+                    output.append((values['input'], f'images/Slide{slide}.png'))
                 slide = slide + 1
         window.close()
     except Exception as e:
