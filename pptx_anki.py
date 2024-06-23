@@ -16,7 +16,7 @@ def pptx_to_images(pptx_filename):
     return len([name for name in os.listdir(image_path) if os.path.isfile(os.path.join(image_path, name))])
 
 def clean_up_images():
-    print("Cleaning up images...")The
+    print("Cleaning up images...")
     files = glob.glob('images/*.png')
     for file in files:
         os.remove(file)
@@ -27,28 +27,47 @@ def display_gui(num_slides):
     output = []
     try:
         slide = 1
-        input = sg.InputText(key='input')
+        # input = sg.InputText(key='input')
+        # (Width, Height)
+        
+        input = sg.Multiline(key="input", size=(30, 10))
         image = sg.Image(f'images/Slide{slide}.png', key='image')
-        back_button = sg.Button('Back')
-        next_button = sg.Button('Next')
-        same_button = sg.Button('Repeat Image')
+        back_button = sg.Button('Back', tooltip = "F1")
+        next_button = sg.Button('Next', tooltip = "F3")
+        #same_button = sg.Button('Repeat Image', tooltip = "F2")
+        submit_deck_button = sg.Button('Create ANKI Deck')
         counter = sg.Text(f"1/{num_slides}", key='counter')
+        history_str = ""
+        history = sg.Multiline(history_str, key = 'history', disabled=True, size=(30,30))
+        column_layout = [[sg.Text('Term: ')], [input], [sg.HorizontalSeparator(color='black')],[sg.Text('History: ')], [history]]
         layout = [ 
-            [sg.Text('Term: '), input, image],
-            [back_button, same_button, next_button, sg.Push(), counter]
+            [sg.Column(column_layout), image],
+            [back_button, next_button, sg.Push(),submit_deck_button, counter]
                 ]
         window = sg.Window('PPTX to Anki Console', layout, finalize=True)
         window.bind('<F1>', 'Back')
         window.bind('<F2>', 'Repeat Image')
         window.bind('<F3>', 'Next')
+        window.bind('<Return>', 'Repeat Image')
         
         while True:
             event, values = window.read()
             if event == sg.WIN_CLOSED:
                 break
+            elif event == 'Create ANKI Deck':
+                if values['input'] != '':
+                    output.append((values['input'], f'images/Slide{slide}.png'))
+                    sg.popup_quick_message("Note added", no_titlebar=True, auto_close_duration=0.75)
+                    history_str = f"{values['input']}: Slide{slide}\n\n" + history_str
+                    window['history'].update(history_str)
+                break
             elif event == 'Back' and slide > 1:
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
+                    sg.popup_quick_message("Note added", no_titlebar=True, auto_close_duration=0.75)
+                    history_str = f"{values['input']}: Slide{slide}\n\n" + history_str
+                    window['history'].update(history_str)
+
                 slide = slide - 1
                 window['image'].update(f'images/Slide{slide}.png')
                 window['input'].update('')
@@ -56,10 +75,16 @@ def display_gui(num_slides):
             elif event == 'Repeat Image':
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
+                    sg.popup_quick_message("Note added", no_titlebar=True, auto_close_duration=0.75)
+                    history_str = f"{values['input']}: Slide{slide}\n\n" + history_str
+                    window['history'].update(history_str)
                 window['input'].update('')
             elif event == 'Next' and slide < num_slides:
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
+                    sg.popup_quick_message("Note added", no_titlebar=True, auto_close_duration=0.75)
+                    history_str = f"{values['input']}: Slide{slide}\n\n" + history_str
+                    window['history'].update(history_str)
                 slide = slide + 1
                 window['image'].update(f'images/Slide{slide}.png')
                 window['input'].update('')
@@ -67,6 +92,9 @@ def display_gui(num_slides):
             elif event == 'input' and slide < num_slides:
                 if values['input'] != '':
                     output.append((values['input'], f'images/Slide{slide}.png'))
+                    sg.popup_quick_message("Note added", no_titlebar=True, auto_close_duration=1)
+                    history_str = f"{values['input']}: Slide{slide}\n\n" + history_str
+                    window['history'].update(history_str)
                 slide = slide + 1
                 window['image'].update(f'images/Slide{slide}.png')
                 window['input'].update('')
@@ -114,7 +142,6 @@ def anki_generation(arr, pptx_name):
     for item in arr:
         term = item[0]
         imagepath = item[1]
-        print(imagepath)
         media_files.add(imagepath)
 
         if not os.path.exists(imagepath):

@@ -7,6 +7,8 @@ __pycache__/
 *.ppt
 # C extensions
 *.so
+images/
+ankidecks/
 
 # Distribution / packaging
 .Python
